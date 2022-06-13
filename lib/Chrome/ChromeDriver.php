@@ -21,13 +21,17 @@ class ChromeDriver extends LocalWebDriver
      * @todo Remove $service parameter. Use `ChromeDriver::startUsingDriverService` to pass custom $service instance.
      * @return static
      */
-    public static function start(DesiredCapabilities $desired_capabilities = null, ChromeDriverService $service = null)
-    {
+    public static function start(
+        DesiredCapabilities $desired_capabilities = null,
+        ChromeDriverService $service = null,
+        $connection_timeout_in_ms = null,
+        $request_timeout_in_ms = null
+    ) {
         if ($service === null) { // TODO: Remove the condition (always create default service)
             $service = ChromeDriverService::createDefaultService();
         }
 
-        return static::startUsingDriverService($service, $desired_capabilities);
+        return static::startUsingDriverService($service, $desired_capabilities, $connection_timeout_in_ms, $request_timeout_in_ms);
     }
 
     /**
@@ -40,13 +44,21 @@ class ChromeDriver extends LocalWebDriver
      */
     public static function startUsingDriverService(
         ChromeDriverService $service,
-        DesiredCapabilities $capabilities = null
+        DesiredCapabilities $capabilities = null,
+        $connection_timeout_in_ms = null,
+        $request_timeout_in_ms = null
     ) {
         if ($capabilities === null) {
             $capabilities = DesiredCapabilities::chrome();
         }
 
         $executor = new DriverCommandExecutor($service);
+        if ($connection_timeout_in_ms !== null) {
+            $executor->setConnectionTimeout($connection_timeout_in_ms);
+        }
+        if ($request_timeout_in_ms !== null) {
+            $executor->setRequestTimeout($request_timeout_in_ms);
+        }
         $newSessionCommand = WebDriverCommand::newSession(
             [
                 'capabilities' => [
